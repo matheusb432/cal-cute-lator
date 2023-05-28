@@ -1,7 +1,10 @@
 <script lang="ts">
+	import Digit from './Digit.svelte';
 	import { Digits } from './types';
 
-	const digitsGrid = [
+	let digitsClicked: Digits[] = [];
+
+	const digitsGrid: Digits[][] = [
 		[Digits.Modulo, Digits.ClearEntry, Digits.Clear, Digits.Delete],
 		[Digits.Inverse, Digits.Square, Digits.Sqrt, Digits.Divide],
 		[Digits.Seven, Digits.Eight, Digits.Nine, Digits.Multiply],
@@ -9,13 +12,26 @@
 		[Digits.One, Digits.Two, Digits.Three, Digits.Add],
 		[Digits.PlusMinus, Digits.Zero, Digits.Decimal, Digits.Equals]
 	];
+
+	function registerClick(digit: Digits) {
+		digitsClicked = [...digitsClicked, digit];
+	}
+
+	function registerKeyPress(event: KeyboardEvent) {
+		const digit = event.key;
+		console.log(digit);
+	}
 </script>
 
 <section class="container">
+	<p>Clicked digits:</p>
+	<span>{digitsClicked}</span>
+	<!-- TODO should register any num or operator -->
+	<input type="text" on:keypress={registerKeyPress} />
 	<div class="digits-grid">
 		{#each digitsGrid as digitsRow}
 			{#each digitsRow as digit}
-				<div>{digit}</div>
+				<Digit {digit} on:click={() => registerClick(digit)} />
 			{/each}
 		{/each}
 	</div>
@@ -31,6 +47,6 @@
 
 	.digits-grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(4, 1fr);
 	}
 </style>
