@@ -19,8 +19,6 @@
 		height: 100vh;
 	}
 	.body {
-		background: #dda50a;
 		padding: 2rem;
-		border-radius: 4px;
 	}
 </style>

@@ -1,14 +1,6 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
+	import { goto } from '$app/navigation';
+	import { Urls } from '$lib/helpers/urls';
+
+	goto(Urls.Calculator);
 </script>
-
-<Button label="test" />
-<div>style me</div>
-
-<style lang="scss">
-	.scoped {
-		width: 200px;
-		height: 100px;
-		background: #000;
-	}
-</style>
