@@ -3,14 +3,13 @@
 </script>
 
 <section class="body">
-	<h1>Header</h1>
 	<Calculator />
 </section>
 
 <style lang="scss">
 	.body {
-		background: #dda50a;
-		padding: 2rem;
+		background: var(--primary);
 		border-radius: 4px;
+		border: 1px solid black;
 	}
 </style>
