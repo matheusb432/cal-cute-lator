@@ -2,9 +2,55 @@
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import { Keys } from '$lib/helpers';
 	import Digit from './Digit.svelte';
-	import { digitDatasGrid, type DigitData } from './types';
+	import { digitDatasGrid, type DigitData, Digits } from './types';
 
-	let digitsClicked: DigitData[] = [];
+	let activeOperator: Digits | null = null;
+
+	$: {
+		const initialOperator = activeOperator;
+
+		activeOperator = null;
+		switch (initialOperator) {
+			case Digits.PlusMinus:
+				value = (-Number(value)).toString();
+				prevValue = null;
+				break;
+			case Digits.Delete:
+				value = value.substring(0, value.length - 1);
+				prevValue = null;
+				break;
+			case Digits.Inverse:
+				value = (1 / Number(value)).toString();
+				prevValue = null;
+				break;
+			case Digits.Square:
+				value = (Number(value) ** 2).toString();
+				prevValue = null;
+				break;
+			case Digits.Sqrt:
+				value = Math.sqrt(Number(value)).toString();
+				prevValue = null;
+				break;
+			case Digits.Clear:
+				value = '0';
+				break;
+			case Digits.ClearEntry:
+				value = '0';
+				prevValue = null;
+				activeOperator = null;
+				break;
+			case Digits.Decimal:
+				if (value.includes('.')) break;
+				value += '.';
+				break;
+			default:
+				activeOperator = initialOperator;
+				break;
+		}
+	}
+
+	let prevValue: string | null = null;
+
 	let value = '0';
 	let fontSize = '14px';
 	$: {
@@ -22,24 +68,63 @@
 		value = '0';
 	}
 
-	const digitsGrid = digitDatasGrid;
-
-	function registerClick(digitData: DigitData) {
-		digitsClicked = [...digitsClicked, digitData];
-		registerDigit(digitData.value);
+	let result: number | null = null;
+	$: if (result != null) {
+		clear();
 	}
 
+	const digitsGrid = digitDatasGrid;
+
+	function clear() {
+		value = '0';
+		prevValue = null;
+		activeOperator = null;
+	}
+
+	function registerDigit(digitData: DigitData) {
+		switch (digitData.type) {
+			case 'operator':
+				if (result != null) {
+					prevValue = result.toString();
+					result = null;
+				}
+				activeOperator = digitData.value;
+				break;
+			case 'number':
+				registerKey(digitData.value);
+				break;
+			case 'equal':
+				calculateResult();
+				break;
+			default:
+				break;
+		}
+	}
+
+	// TODO register operator keys
 	function registerKeyPress(event: KeyboardEvent) {
 		if (event.ctrlKey || event.altKey || event.metaKey) return;
 
 		const digit = event.key;
 
 		event.preventDefault();
-		registerDigit(digit);
+		registerKey(digit);
 	}
 
-	function registerDigit(digit: string) {
+	function registerKey(digit: string) {
 		const asNum = Number(digit);
+
+		if (result != null) {
+			value = '0';
+			prevValue = null;
+			result = null;
+		}
+
+		if (activeOperator != null && prevValue === null) {
+			prevValue = value;
+			value = '0';
+		}
+
 		const len = value.length;
 		const isZero = value === '0';
 
@@ -61,20 +146,54 @@
 		value += digit;
 	}
 
-	function calculateResult() {}
+	function calculateResult() {
+		if (activeOperator == null) return;
+
+		switch (activeOperator) {
+			case Digits.Add:
+				result = Number(prevValue) + Number(value);
+				break;
+			case Digits.Subtract:
+				result = Number(prevValue) - Number(value);
+				break;
+			case Digits.Multiply:
+				result = Number(prevValue) * Number(value);
+				break;
+			case Digits.Divide:
+				if (value === '0') {
+					alert('cannot divide by zero!');
+					return;
+				}
+				result = Number(prevValue) / Number(value);
+				break;
+			case Digits.Modulo:
+				result = Number(prevValue) % Number(value);
+				break;
+			default:
+				break;
+		}
+	}
 </script>
 
 <section class="container">
+	<p style="margin-bottom: 0px;">value - {value}</p>
+	<p style="margin-bottom: 0px;">prevValue - {prevValue}</p>
+	<p style="margin-bottom: 0px;">activeOperator - {activeOperator}</p>
+	<p style="margin-bottom: 0px;">result - {result}</p>
 	<header class="result">
-		<p>Clicked digits:</p>
-		<button on:click={() => (value = '0')}>Empty input</button>
-		<!-- TODO should register any num or operator -->
-		<NumberInput {value} on:keydown={registerKeyPress} styles={`font-size: ${fontSize};`} />
+		{#if prevValue != null || activeOperator != null}
+			<span class="operation">{prevValue ?? value} {activeOperator}</span>
+		{/if}
+		<NumberInput
+			value={result?.toString() ?? value}
+			on:keydown={registerKeyPress}
+			styles={`font-size: ${fontSize};`}
+		/>
 	</header>
 	<div class="digits-grid">
 		{#each digitsGrid as digitsRow}
 			{#each digitsRow as digitData}
-				<Digit data={digitData} on:click={() => registerClick(digitData)} />
+				<Digit data={digitData} on:click={() => registerDigit(digitData)} />
 			{/each}
 		{/each}
 	</div>
