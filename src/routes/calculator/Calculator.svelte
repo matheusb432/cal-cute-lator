@@ -2,8 +2,14 @@
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import { Keys } from '$lib/helpers';
 	import Digit from './Digit.svelte';
-	import { calculateMultipleValuesResult } from './calculator-util';
-	import { digitDatasGrid, type DigitData, Digits, singleValueOperatorSet } from './types';
+	import { calculateMultipleValuesResult, handleSingleValueOperator } from './calculator-util';
+	import {
+		digitDatasGrid,
+		type DigitData,
+		Digits,
+		singleValueOperatorSet,
+		type SingleOperationResult
+	} from './types';
 
 	let activeOperator: Digits | null = null;
 
@@ -26,12 +32,14 @@
 		value = '0';
 	}
 
+	// TODO remove result state?
 	let result: number | null = null;
 	$: if (result != null) {
 		clear();
 	}
 
 	const digitsGrid = digitDatasGrid;
+	$: flatDigitsGrid = digitsGrid.flat();
 
 	function clear() {
 		calculateSingleValueOperation('0');
@@ -46,10 +54,6 @@
 	function registerDigit(digitData: DigitData) {
 		switch (digitData.type) {
 			case 'operator':
-				if (result != null) {
-					prevValue = result.toString();
-					result = null;
-				}
 				registerOperator(digitData.value);
 				break;
 			case 'number':
@@ -65,55 +69,58 @@
 
 	function registerOperator(operator: Digits) {
 		if (singleValueOperatorSet.has(operator)) {
-			console.log('handle');
-			handleSingleValueOperator(operator);
+			const result = handleSingleValueOperator(value, operator);
+			setSingleValueOperatorResult(result);
 			return;
 		}
+
+		if (result != null) {
+			prevValue = result.toString();
+			result = null;
+			activeOperator = operator;
+			return;
+		}
+
 		activeOperator = operator;
 		const initialValue = value;
 		prevValue = initialValue;
 		value = '0';
 	}
 
-	function handleSingleValueOperator(operator: Digits) {
-		switch (operator) {
-			case Digits.PlusMinus:
-				calculateSingleValueOperation((-Number(value)).toString());
-				break;
-			case Digits.Delete:
-				calculateSingleValueOperation(value.substring(0, value.length - 1));
-				break;
-			case Digits.Inverse:
-				calculateSingleValueOperation((1 / Number(value)).toString());
-				break;
-			case Digits.Square:
-				calculateSingleValueOperation((Number(value) ** 2).toString());
-				break;
-			case Digits.Sqrt:
-				calculateSingleValueOperation(Math.sqrt(Number(value)).toString());
-				break;
-			case Digits.Clear:
-				clear();
-				break;
-			case Digits.ClearEntry:
-				value = '0';
+	function setSingleValueOperatorResult(operationResult: SingleOperationResult) {
+		const {
+			value: newValue,
+			prevValue: newPrevValue,
+			activeOperator: newActiveOperator,
+			result: newResult
+		} = operationResult;
 
-				break;
-			case Digits.Decimal:
-				if (value.includes('.')) break;
-				value += '.';
-				break;
-		}
+		if (newValue !== undefined) value = newValue;
+		if (newPrevValue !== undefined) prevValue = newPrevValue;
+		if (newActiveOperator !== undefined) activeOperator = newActiveOperator;
+		if (newResult !== undefined) result = newResult;
 	}
 
-	// TODO register operator keys
 	function registerKeyPress(event: KeyboardEvent) {
 		if (event.ctrlKey || event.altKey || event.metaKey) return;
 
 		const digit = event.key;
 
 		event.preventDefault();
-		registerKey(digit);
+		const len = value.length;
+		const isZero = value === '0';
+
+		if (digit === Keys.Backspace && !isZero) {
+			value = value.substring(0, len - 1);
+			return;
+		}
+		if (digit === Keys.Enter) {
+			calculateResult();
+			return;
+		}
+		const digitData = flatDigitsGrid.find((d) => d.value === digit);
+
+		if (digitData != null) registerDigit(digitData);
 	}
 
 	function registerKey(digit: string) {
@@ -130,17 +137,9 @@
 			value = '0';
 		}
 
-		const len = value.length;
 		const isZero = value === '0';
 
-		if (isNaN(asNum)) {
-			if (digit === Keys.Backspace && !isZero) {
-				value = value.substring(0, len - 1);
-			}
-			if (digit === Keys.Enter) calculateResult();
-
-			return;
-		}
+		if (isNaN(asNum)) return;
 
 		if (isZero) {
 			value = digit;
@@ -167,7 +166,7 @@
 	<p style="margin-bottom: 0px;">result - {result}</p>
 	<header class="result">
 		{#if prevValue != null || activeOperator != null}
-			<span class="operation">{prevValue ?? value} {activeOperator}</span>
+			<span class="operation">{prevValue ?? value} {activeOperator ?? ''}</span>
 		{/if}
 		<NumberInput
 			value={result?.toString() ?? value}

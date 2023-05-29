@@ -10,7 +10,7 @@ export enum Digits {
 	Seven = '7',
 	Eight = '8',
 	Nine = '9',
-	Multiply = 'x',
+	Multiply = '*',
 	Four = '4',
 	Five = '5',
 	Six = '6',
@@ -85,3 +85,10 @@ export const digitDatasGrid: DigitData[][] = digitsGrid.map((row) =>
 		type: numberSet.has(digit) ? 'number' : operatorSet.has(digit) ? 'operator' : 'equal'
 	}))
 );
+
+export type SingleOperationResult = {
+	value?: string;
+	prevValue?: string | null;
+	activeOperator?: Digits | null;
+	result?: number | null;
+};

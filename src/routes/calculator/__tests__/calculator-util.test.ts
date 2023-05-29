@@ -77,12 +77,12 @@ describe('calculator-util', () => {
 
 		it('should calculate Clear', () => {
 			const result = handleSingleValueOperator('whatever', Digits.Clear);
-			expect(result).toEqual({ value: '0', prevValue: null, activeOperator: null });
+			expect(result).toEqual({ value: '0', prevValue: null, activeOperator: null, result: null });
 		});
 
 		it('should calculate ClearEntry', () => {
 			const result = handleSingleValueOperator('whatever', Digits.ClearEntry);
-			expect(result).toEqual({ value: '0' });
+			expect(result).toEqual({ value: '0', result: null });
 		});
 
 		it('should calculate Decimal (when not present)', () => {

@@ -1,4 +1,4 @@
-import { Digits } from './types';
+import { Digits, type SingleOperationResult } from './types';
 
 export function calculateMultipleValuesResult(
 	prevValue: string | null,
@@ -23,7 +23,7 @@ export function calculateMultipleValuesResult(
 	}
 }
 
-export function handleSingleValueOperator(value: string, operator: Digits) {
+export function handleSingleValueOperator(value: string, operator: Digits): SingleOperationResult {
 	const numberValue = Number(value);
 	switch (operator) {
 		case Digits.PlusMinus:
@@ -38,21 +38,18 @@ export function handleSingleValueOperator(value: string, operator: Digits) {
 		case Digits.Sqrt:
 			return calculateSingleValueOperation(Math.sqrt(numberValue).toString());
 		case Digits.Clear:
-			return clear();
+			return { ...clear(), result: null };
 		case Digits.ClearEntry:
-			// value = '0';
 			return {
-				value: '0'
+				value: '0',
+				result: null
 			};
 
-		// break;
 		case Digits.Decimal:
 			if (value.includes('.')) return {};
 			return {
 				value: value + '.'
 			};
-		// value += '.';
-		// break;
 	}
 	return {};
 }
@@ -66,9 +63,5 @@ function calculateSingleValueOperation(newValue: string): {
 	prevValue: null;
 	activeOperator: null;
 } {
-	// return [newValue, null, null]
 	return { value: newValue, prevValue: null, activeOperator: null };
-	// value = newValue;
-	// prevValue = null;
-	// activeOperator = null;
 }
