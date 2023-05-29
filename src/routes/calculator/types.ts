@@ -30,6 +30,17 @@ export type DigitData = {
 	type: 'number' | 'operator' | 'equal';
 };
 
+export const singleValueOperatorSet = new Set([
+	Digits.PlusMinus,
+	Digits.Delete,
+	Digits.Inverse,
+	Digits.Square,
+	Digits.Sqrt,
+	Digits.Clear,
+	Digits.ClearEntry,
+	Digits.Decimal
+]);
+
 const digitsGrid: Digits[][] = [
 	[Digits.Modulo, Digits.ClearEntry, Digits.Clear, Digits.Delete],
 	[Digits.Inverse, Digits.Square, Digits.Sqrt, Digits.Divide],

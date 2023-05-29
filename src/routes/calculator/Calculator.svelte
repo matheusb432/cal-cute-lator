@@ -2,52 +2,10 @@
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import { Keys } from '$lib/helpers';
 	import Digit from './Digit.svelte';
-	import { digitDatasGrid, type DigitData, Digits } from './types';
+	import { calculateMultipleValuesResult } from './calculator-util';
+	import { digitDatasGrid, type DigitData, Digits, singleValueOperatorSet } from './types';
 
 	let activeOperator: Digits | null = null;
-
-	$: {
-		const initialOperator = activeOperator;
-
-		activeOperator = null;
-		switch (initialOperator) {
-			case Digits.PlusMinus:
-				value = (-Number(value)).toString();
-				prevValue = null;
-				break;
-			case Digits.Delete:
-				value = value.substring(0, value.length - 1);
-				prevValue = null;
-				break;
-			case Digits.Inverse:
-				value = (1 / Number(value)).toString();
-				prevValue = null;
-				break;
-			case Digits.Square:
-				value = (Number(value) ** 2).toString();
-				prevValue = null;
-				break;
-			case Digits.Sqrt:
-				value = Math.sqrt(Number(value)).toString();
-				prevValue = null;
-				break;
-			case Digits.Clear:
-				value = '0';
-				break;
-			case Digits.ClearEntry:
-				value = '0';
-				prevValue = null;
-				activeOperator = null;
-				break;
-			case Digits.Decimal:
-				if (value.includes('.')) break;
-				value += '.';
-				break;
-			default:
-				activeOperator = initialOperator;
-				break;
-		}
-	}
 
 	let prevValue: string | null = null;
 
@@ -76,7 +34,11 @@
 	const digitsGrid = digitDatasGrid;
 
 	function clear() {
-		value = '0';
+		calculateSingleValueOperation('0');
+	}
+
+	function calculateSingleValueOperation(newValue: string) {
+		value = newValue;
 		prevValue = null;
 		activeOperator = null;
 	}
@@ -88,7 +50,7 @@
 					prevValue = result.toString();
 					result = null;
 				}
-				activeOperator = digitData.value;
+				registerOperator(digitData.value);
 				break;
 			case 'number':
 				registerKey(digitData.value);
@@ -97,6 +59,49 @@
 				calculateResult();
 				break;
 			default:
+				break;
+		}
+	}
+
+	function registerOperator(operator: Digits) {
+		if (singleValueOperatorSet.has(operator)) {
+			console.log('handle');
+			handleSingleValueOperator(operator);
+			return;
+		}
+		activeOperator = operator;
+		const initialValue = value;
+		prevValue = initialValue;
+		value = '0';
+	}
+
+	function handleSingleValueOperator(operator: Digits) {
+		switch (operator) {
+			case Digits.PlusMinus:
+				calculateSingleValueOperation((-Number(value)).toString());
+				break;
+			case Digits.Delete:
+				calculateSingleValueOperation(value.substring(0, value.length - 1));
+				break;
+			case Digits.Inverse:
+				calculateSingleValueOperation((1 / Number(value)).toString());
+				break;
+			case Digits.Square:
+				calculateSingleValueOperation((Number(value) ** 2).toString());
+				break;
+			case Digits.Sqrt:
+				calculateSingleValueOperation(Math.sqrt(Number(value)).toString());
+				break;
+			case Digits.Clear:
+				clear();
+				break;
+			case Digits.ClearEntry:
+				value = '0';
+
+				break;
+			case Digits.Decimal:
+				if (value.includes('.')) break;
+				value += '.';
 				break;
 		}
 	}
@@ -147,31 +152,11 @@
 	}
 
 	function calculateResult() {
-		if (activeOperator == null) return;
+		const newResult = calculateMultipleValuesResult(prevValue, value, activeOperator);
 
-		switch (activeOperator) {
-			case Digits.Add:
-				result = Number(prevValue) + Number(value);
-				break;
-			case Digits.Subtract:
-				result = Number(prevValue) - Number(value);
-				break;
-			case Digits.Multiply:
-				result = Number(prevValue) * Number(value);
-				break;
-			case Digits.Divide:
-				if (value === '0') {
-					alert('cannot divide by zero!');
-					return;
-				}
-				result = Number(prevValue) / Number(value);
-				break;
-			case Digits.Modulo:
-				result = Number(prevValue) % Number(value);
-				break;
-			default:
-				break;
-		}
+		if (newResult == null) return;
+
+		result = newResult;
 	}
 </script>
 
