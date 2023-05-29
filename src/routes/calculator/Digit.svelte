@@ -18,21 +18,27 @@
 		width: 100%;
 		height: 100%;
 		cursor: pointer;
-		transition: all 0.2s ease-in-out;
 		color: var(--text-dark);
+		transition: all 0.15s ease-in-out;
 
 		&:hover {
 			opacity: 0.8;
 		}
 
 		&:active {
-			opacity: 0.6;
+			opacity: 0.5;
 		}
 
 		&.number {
-			background-color: var(--primary);
-			border-color: var(--primary);
+			background-color: var(--bg-color);
+			border-color: var(--bg-color);
 			color: var(--text-light);
+
+			&:hover {
+				background-color: var(--text-light);
+				border-color: var(--text-light);
+				color: var(--text-dark);
+			}
 		}
 
 		&.operator {

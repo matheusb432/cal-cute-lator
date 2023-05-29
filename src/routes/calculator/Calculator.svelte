@@ -1,10 +1,26 @@
 <script lang="ts">
 	import NumberInput from '$lib/components/NumberInput.svelte';
+	import { Keys } from '$lib/helpers';
 	import Digit from './Digit.svelte';
 	import { digitDatasGrid, type DigitData } from './types';
 
 	let digitsClicked: DigitData[] = [];
 	let value = '0';
+	let fontSize = '14px';
+	$: {
+		let size = 14;
+		const len = value.length;
+		if (len < 30) size = 18;
+		if (len < 24) size = 24;
+		if (len < 18) size = 32;
+		if (len < 12) size = 48;
+
+		fontSize = size + 'px';
+	}
+
+	$: if (value.length === 0) {
+		value = '0';
+	}
 
 	const digitsGrid = digitDatasGrid;
 
@@ -14,20 +30,29 @@
 	}
 
 	function registerKeyPress(event: KeyboardEvent) {
+		if (event.ctrlKey || event.altKey || event.metaKey) return;
+
 		const digit = event.key;
 
-		if (value === '0') {
-			event.preventDefault();
-			registerDigit(digit);
-		}
+		event.preventDefault();
+		registerDigit(digit);
 	}
 
 	function registerDigit(digit: string) {
 		const asNum = Number(digit);
+		const len = value.length;
+		const isZero = value === '0';
 
-		if (isNaN(asNum)) return;
+		if (isNaN(asNum)) {
+			if (digit === Keys.Backspace && !isZero) {
+				value = value.substring(0, len - 1);
+			}
+			if (digit === Keys.Enter) calculateResult();
 
-		if (value === '0') {
+			return;
+		}
+
+		if (isZero) {
 			value = digit;
 
 			return;
@@ -35,15 +60,16 @@
 
 		value += digit;
 	}
+
+	function calculateResult() {}
 </script>
 
 <section class="container">
 	<header class="result">
 		<p>Clicked digits:</p>
 		<button on:click={() => (value = '0')}>Empty input</button>
-		<span>{digitsClicked}</span>
 		<!-- TODO should register any num or operator -->
-		<NumberInput {value} on:keypress={registerKeyPress} />
+		<NumberInput {value} on:keydown={registerKeyPress} styles={`font-size: ${fontSize};`} />
 	</header>
 	<div class="digits-grid">
 		{#each digitsGrid as digitsRow}
@@ -59,11 +85,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		background: var(--bg-color);
 		justify-content: center;
 		width: 100%;
 		max-width: 380px;
-		max-height: 560px;
 		padding: 4px;
 	}
 
