@@ -10,6 +10,5 @@
 	.body {
 		background: var(--primary);
 		border-radius: 4px;
-		border: 1px solid black;
 	}
 </style>

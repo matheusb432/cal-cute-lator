@@ -1,24 +1,16 @@
 <script lang="ts">
 	import NumberInput from '$lib/components/NumberInput.svelte';
 	import Digit from './Digit.svelte';
-	import { Digits } from './types';
+	import { digitDatasGrid, type DigitData } from './types';
 
-	let digitsClicked: Digits[] = [];
+	let digitsClicked: DigitData[] = [];
 	let value = '0';
-	let displayInput: NumberInput;
 
-	const digitsGrid: Digits[][] = [
-		[Digits.Modulo, Digits.ClearEntry, Digits.Clear, Digits.Delete],
-		[Digits.Inverse, Digits.Square, Digits.Sqrt, Digits.Divide],
-		[Digits.Seven, Digits.Eight, Digits.Nine, Digits.Multiply],
-		[Digits.Four, Digits.Five, Digits.Six, Digits.Subtract],
-		[Digits.One, Digits.Two, Digits.Three, Digits.Add],
-		[Digits.PlusMinus, Digits.Zero, Digits.Decimal, Digits.Equals]
-	];
+	const digitsGrid = digitDatasGrid;
 
-	function registerClick(digit: Digits) {
-		digitsClicked = [...digitsClicked, digit];
-		registerDigit(digit);
+	function registerClick(digitData: DigitData) {
+		digitsClicked = [...digitsClicked, digitData];
+		registerDigit(digitData.value);
 	}
 
 	function registerKeyPress(event: KeyboardEvent) {
@@ -55,8 +47,8 @@
 	</header>
 	<div class="digits-grid">
 		{#each digitsGrid as digitsRow}
-			{#each digitsRow as digit}
-				<Digit {digit} on:click={() => registerClick(digit)} />
+			{#each digitsRow as digitData}
+				<Digit data={digitData} on:click={() => registerClick(digitData)} />
 			{/each}
 		{/each}
 	</div>
@@ -67,16 +59,17 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		background: var(--bg-color);
 		justify-content: center;
 		width: 100%;
-		max-width: 340px;
-		max-height: 520px;
+		max-width: 380px;
+		max-height: 560px;
+		padding: 4px;
 	}
 
 	.result {
-		background: var(--accent);
 		width: 100%;
-		padding: 4px;
+		color: var(--text-light);
 	}
 
 	.digits-grid {
