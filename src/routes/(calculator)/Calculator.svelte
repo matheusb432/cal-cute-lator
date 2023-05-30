@@ -18,12 +18,10 @@
 	let value = '0';
 	let fontSize = '14px';
 	$: {
-		let size = 14;
+		let size = 24;
 		const len = value.length;
-		if (len < 30) size = 18;
-		if (len < 24) size = 24;
-		if (len < 18) size = 32;
-		if (len < 12) size = 48;
+		if (len < 30) size = 32;
+		if (len < 15) size = 48;
 
 		fontSize = size + 'px';
 	}
@@ -32,24 +30,10 @@
 		value = '0';
 	}
 
-	// TODO remove result state?
-	let result: number | null = null;
-	$: if (result != null) {
-		clear();
-	}
+	let isResult = false;
 
 	const digitsGrid = digitDatasGrid;
 	$: flatDigitsGrid = digitsGrid.flat();
-
-	function clear() {
-		calculateSingleValueOperation('0');
-	}
-
-	function calculateSingleValueOperation(newValue: string) {
-		value = newValue;
-		prevValue = null;
-		activeOperator = null;
-	}
 
 	function registerDigit(digitData: DigitData) {
 		switch (digitData.type) {
@@ -74,17 +58,14 @@
 			return;
 		}
 
-		if (result != null) {
-			prevValue = result.toString();
-			result = null;
-			activeOperator = operator;
-			return;
-		}
-
+		swapValues();
 		activeOperator = operator;
-		const initialValue = value;
-		prevValue = initialValue;
+	}
+
+	function swapValues() {
+		prevValue = value;
 		value = '0';
+		isResult = false;
 	}
 
 	function setSingleValueOperatorResult(operationResult: SingleOperationResult) {
@@ -98,7 +79,7 @@
 		if (newValue !== undefined) value = newValue;
 		if (newPrevValue !== undefined) prevValue = newPrevValue;
 		if (newActiveOperator !== undefined) activeOperator = newActiveOperator;
-		if (newResult !== undefined) result = newResult;
+		if (newResult !== undefined) isResult = !!newResult;
 	}
 
 	function registerKeyPress(event: KeyboardEvent) {
@@ -126,15 +107,10 @@
 	function registerKey(digit: string) {
 		const asNum = Number(digit);
 
-		if (result != null) {
+		if (isResult) {
 			value = '0';
 			prevValue = null;
-			result = null;
-		}
-
-		if (activeOperator != null && prevValue === null) {
-			prevValue = value;
-			value = '0';
+			isResult = false;
 		}
 
 		const isZero = value === '0';
@@ -155,24 +131,20 @@
 
 		if (newResult == null) return;
 
-		result = newResult;
+		value = newResult.toString();
+		prevValue = null;
+		activeOperator = null;
+		isResult = true;
 	}
 </script>
 
 <section class="container">
-	<p style="margin-bottom: 0px;">value - {value}</p>
-	<p style="margin-bottom: 0px;">prevValue - {prevValue}</p>
-	<p style="margin-bottom: 0px;">activeOperator - {activeOperator}</p>
-	<p style="margin-bottom: 0px;">result - {result}</p>
 	<header class="result">
+		<h1 class="title">Cal-Cute-Lator ✨</h1>
 		{#if prevValue != null || activeOperator != null}
 			<span class="operation">{prevValue ?? value} {activeOperator ?? ''}</span>
 		{/if}
-		<NumberInput
-			value={result?.toString() ?? value}
-			on:keydown={registerKeyPress}
-			styles={`font-size: ${fontSize};`}
-		/>
+		<NumberInput {value} on:keydown={registerKeyPress} styles={`font-size: ${fontSize};`} />
 	</header>
 	<div class="digits-grid">
 		{#each digitsGrid as digitsRow}
@@ -190,7 +162,8 @@
 		align-items: center;
 		justify-content: center;
 		width: 100%;
-		max-width: 380px;
+		/* max-width: 380px; */
+		height: 100%;
 		padding: 4px;
 	}
 
@@ -202,8 +175,15 @@
 	.digits-grid {
 		display: grid;
 		width: 100%;
+		height: 100%;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 4px;
 		padding: 4px;
+	}
+
+	.title {
+		margin: 0;
+		padding: 0;
+		text-align: center;
 	}
 </style>

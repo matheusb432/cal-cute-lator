@@ -5,7 +5,7 @@ export enum Digits {
 	Delete = 'DEL',
 	Inverse = '1/x',
 	Square = 'x^2',
-	Sqrt = 'sqrt',
+	Sqrt = '√2',
 	Divide = '/',
 	Seven = '7',
 	Eight = '8',

@@ -1,4 +1,3 @@
 export const Urls = {
-	Home: '/',
-	Calculator: '/calculator'
+	Calculator: '/'
 } as const;
