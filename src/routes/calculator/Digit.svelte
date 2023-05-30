@@ -13,7 +13,6 @@
 		background: var(--text-light);
 		border: 1px solid var(--text-light);
 		border-radius: 4px;
-		padding: 1rem;
 		font-size: 1.5rem;
 		width: 100%;
 		height: 100%;

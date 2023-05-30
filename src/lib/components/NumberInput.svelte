@@ -37,7 +37,7 @@
 		}
 
 		&:hover {
-			transform: scale(1.1);
+			transform: translateX(4px) translateY(1px);
 		}
 	}
 </style>
