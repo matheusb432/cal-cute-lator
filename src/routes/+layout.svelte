@@ -1,6 +1,6 @@
 <script lang="ts">
-	import './styles.scss';
 	import { onMount } from 'svelte';
+	import './styles.scss';
 	import { pwaInfo } from 'virtual:pwa-info';
 
 	onMount(async () => {
@@ -8,10 +8,10 @@
 			const { registerSW } = await import('virtual:pwa-register' as any);
 			registerSW({
 				immediate: true,
-				onRegistered(r: any) {
+				onRegistered(r: unknown) {
 					console.log(`SW Registered: ${r}`);
 				},
-				onRegisterError(error: any) {
+				onRegisterError(error: unknown) {
 					console.log('SW registration error', error);
 				}
 			});
