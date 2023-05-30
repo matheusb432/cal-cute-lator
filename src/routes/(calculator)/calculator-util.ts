@@ -63,5 +63,5 @@ function calculateSingleValueOperation(newValue: string): {
 	prevValue: null;
 	activeOperator: null;
 } {
-	return { value: newValue, prevValue: null, activeOperator: null };
+	return { value: newValue === 'Infinity' ? '0' : newValue, prevValue: null, activeOperator: null };
 }

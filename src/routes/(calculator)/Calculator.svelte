@@ -1,6 +1,6 @@
 <script lang="ts">
 	import NumberInput from '$lib/components/NumberInput.svelte';
-	import { Keys } from '$lib/helpers';
+	import { Keys } from '$lib/helpers/keys';
 	import Digit from './Digit.svelte';
 	import { calculateMultipleValuesResult, handleSingleValueOperator } from './calculator-util';
 	import {
@@ -76,7 +76,7 @@
 			result: newResult
 		} = operationResult;
 
-		if (newValue !== undefined) value = newValue;
+		if (newValue !== undefined) value = newValue === 'Infinity' ? '0' : newValue;
 		if (newPrevValue !== undefined) prevValue = newPrevValue;
 		if (newActiveOperator !== undefined) activeOperator = newActiveOperator;
 		if (newResult !== undefined) isResult = !!newResult;
@@ -131,7 +131,7 @@
 
 		if (newResult == null) return;
 
-		value = newResult.toString();
+		value = newResult === Infinity ? '0' : newResult.toString();
 		prevValue = null;
 		activeOperator = null;
 		isResult = true;

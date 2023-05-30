@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getPasteData } from '$lib/utils';
+	import { getPasteData } from '$lib/utils/clipboard-util';
 
 	export let value: string;
 	export let styles = '';
